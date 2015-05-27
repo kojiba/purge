@@ -17,10 +17,13 @@
 #include <string.h>
 #include <stdio.h>
 
+
+typedef uint8_t byte;
+
 #define forAll(iterator, count) for(iterator = 0; iterator < (count); ++iterator)
 
 // 64 circular shift (rotates)
-#define rotateLeft(data, shift) (((data) << shift) | ((data) >> (64 - shift)))
+#define rotateLeft(data,  shift) (((data) << shift) | ((data) >> (64 - shift)))
 #define rotateRight(data, shift) (((data) >> shift) | ((data) << (64 - shift)))
 
 
@@ -38,24 +41,6 @@
                          array[7] = temp; \
                              temp = 0
 
-#define roundKeySubstraction(key, data) key[0] -= data[0]; \
-                                        key[1] -= data[1]; \
-                                        key[2] -= data[2]; \
-                                        key[3] -= data[3]; \
-                                        key[4] -= data[4]; \
-                                        key[5] -= data[5]; \
-                                        key[6] -= data[6]; \
-                                        key[7] -= data[7]
-
-#define roundKeyAddition(key, data) key[0] += data[0]; \
-                                    key[1] += data[1]; \
-                                    key[2] += data[2]; \
-                                    key[3] += data[3]; \
-                                    key[4] += data[4]; \
-                                    key[5] += data[5]; \
-                                    key[6] += data[6]; \
-                                    key[7] += data[7]
-
 #define roundKeyXor(data, key) data[0] ^= key[0]; \
                                data[1] ^= key[1]; \
                                data[2] ^= key[2]; \
@@ -64,6 +49,15 @@
                                data[5] ^= key[5]; \
                                data[6] ^= key[6]; \
                                data[7] ^= key[7]
+
+#define roundAmplification(sign)  key[0] sign= keyАmplification[0]; \
+                                  key[1] sign= keyАmplification[1]; \
+                                  key[2] sign= keyАmplification[2]; \
+                                  key[3] sign= keyАmplification[3]; \
+                                  key[4] sign= keyАmplification[4]; \
+                                  key[5] sign= keyАmplification[5]; \
+                                  key[6] sign= keyАmplification[6]; \
+                                  key[7] sign= keyАmplification[7]
 
 uint64_t substitute(uint64_t data, const byte *block) {
     union bytesTo64 {
@@ -155,17 +149,6 @@ void decryptRoundKey(uint64_t key[8], uint8_t step) {
     memset(&iterator, 0, 1);
 }
 
-void printByteArrayInHex(const uint8_t *array, int size) {
-    size_t iterator;
-    for(iterator = 0; iterator <  size; ++iterator) {
-        if (iterator % 32 == 0 && iterator != 0) {
-            printf("\n");
-        }
-        printf("%02X ", array[iterator]);
-    }
-    printf("\n");
-}
-
 void purgeEncrypt(uint64_t data[8], uint64_t key[8]) {
     uint64_t temp;
     byte iterator;
@@ -176,15 +159,13 @@ void purgeEncrypt(uint64_t data[8], uint64_t key[8]) {
         data[1] ^= palindromeMask;
         data[2] ^= palindromeMaskReverse;
         data[3] = rotateLeft(data[3], 13);
+
         data[4] += data[3];
         data[5] += data[0];
         data[6] += mask;
         data[7] += maskReverse;
 
         roundKeyForStep(key, (uint8_t) (iterator + 1));
-
-        printf("%d round key\n", iterator);
-        printByteArrayInHex((const uint8_t *) key, bytesCount);
 
         roundKeyXor(data, key);
         sawSwap(data);
@@ -194,8 +175,6 @@ void purgeEncrypt(uint64_t data[8], uint64_t key[8]) {
         data[4] = substitute(data[4], substitutionBlock);
         data[6] = substitute(data[6], substitutionBlock);
 
-//        printf("%d - %llu %llu %llu %llu\n", iterator, data[1], data[3], data[4], data[6]);
-//        printf("rotate on %d\n", (byte)(iterator % (bytesCount / 2) + 1));
         rotateBytes((byte *) data, (byte)(iterator % (bytesCount / 2) + 1));
     }
 
@@ -205,7 +184,6 @@ void purgeEncrypt(uint64_t data[8], uint64_t key[8]) {
 void purgeDecrypt(uint64_t data[8], uint64_t key[8]) {
     uint64_t temp;
     byte iterator;
-//    uint64_t keyTemp[8];
 
     // get final key
     forAll(iterator, roundsCount) {
@@ -213,34 +191,28 @@ void purgeDecrypt(uint64_t data[8], uint64_t key[8]) {
     }
 
     for(iterator = roundsCount - 1; iterator != 255; --iterator) {
-        printf("step : %d", iterator);
         reverseRotateBytes((byte *) data, (byte)(iterator % (bytesCount / 2) + 1));
-//        printf("unrotate on %d\n", (byte)(iterator % (bytesCount / 2) + 1));
-//        printf("%d - %llu %llu %llu %llu\n", iterator, data[1], data[3], data[4], data[6]);
 
         data[1] = substitute(data[1], reverseSubstitutionBlock);
         data[3] = substitute(data[3], reverseSubstitutionBlock);
         data[4] = substitute(data[4], reverseSubstitutionBlock);
         data[6] = substitute(data[6], reverseSubstitutionBlock);
 
-        printf(" round key\n");
-        printByteArrayInHex((const uint8_t *) key, bytesCount);
-
         sawUnswap(data);
         roundKeyXor(data, key);
 
         decryptRoundKey(key, (uint8_t) (iterator + 1));
 
-
         // round
-        data[0] = rotateRight(data[0], 7);
-        data[1] ^= palindromeMask;
-        data[2] ^= palindromeMaskReverse;
-        data[3] = rotateRight(data[3], 13);
-        data[4] -= data[3];
-        data[5] -= data[0];
-        data[6] -= mask;
         data[7] -= maskReverse;
+        data[6] -= mask;
+        data[5] -= data[0];
+        data[4] -= data[3];
+
+        data[3] = rotateRight(data[3], 13);
+        data[2] ^= palindromeMaskReverse;
+        data[1] ^= palindromeMask;
+        data[0] = rotateRight(data[0], 7);
     }
 
     memset(key, 0, bytesCount);
