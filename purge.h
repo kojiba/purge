@@ -21,6 +21,8 @@
 
 static const uint8_t bytesCount = 64;
 
+static const uint8_t roundsCount = bytesCount - 1;
+
 static const uint64_t palindromeMask        = 0xAAAAAAAA55555555;
 static const uint64_t palindromeMaskReverse = 0x55555555AAAAAAAA;
 
@@ -75,6 +77,32 @@ static const uint8_t reverseSubstitutionBlock[256] = {
         0xB9, 0xEE, 0x99, 0x7E, 0x6A, 0x43, 0x29, 0x93, 0x09, 0x7A, 0xCD, 0xC3, 0x4B, 0x3A, 0xC2, 0x8C,
         0x18, 0x22, 0x37, 0x7F, 0xF0, 0xE8, 0xFF, 0x45, 0xF2, 0xB3, 0xC0, 0xEA, 0xDC, 0x67, 0x53, 0x7D,
 };
+
+typedef uint8_t byte;
+
+#define sawSwap(array)     temp = array[7]; \
+                       array[7] = array[2]; \
+                       array[2] = array[5]; \
+                       array[5] = array[0]; \
+                       array[0] = temp; \
+                           temp = 0
+
+#define sawUnswap(array)     temp = array[0]; \
+                         array[0] = array[5]; \
+                         array[5] = array[2]; \
+                         array[2] = array[7]; \
+                         array[7] = temp; \
+                             temp = 0
+
+uint64_t substitute(uint64_t data, const byte *block);
+
+void rotateBytes(byte *data, byte count);
+void reverseRotateBytes(byte *data, byte count);
+
+void roundKeyForStep(uint64_t key[8], uint8_t step);
+void decryptRoundKey(uint64_t key[8], uint8_t step);
+
+void printByteArrayInHex(const uint8_t *array, int size);// fixme
 
 void purgeEncrypt(uint64_t data[8], uint64_t key[8]); // key and data will be changed
 void purgeDecrypt(uint64_t data[8], uint64_t key[8]); // key and data will be changed

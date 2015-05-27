@@ -15,10 +15,7 @@
 
 #include "purge.h"
 #include <string.h>
-
-typedef uint8_t byte;
-
-#define roundsCount (bytesCount - 1)
+#include <stdio.h>
 
 #define forAll(iterator, count) for(iterator = 0; iterator < (count); ++iterator)
 
@@ -109,7 +106,7 @@ void reverseRotateBytes(byte *data, byte count) {
     }
 }
 
-void roundKeyForStep(uint64_t key[8], byte step) {
+void roundKeyForStep(uint64_t key[8], uint8_t step) {
     byte iterator;
     uint64_t temp;
     forAll(iterator, step) {
@@ -133,6 +130,42 @@ void roundKeyForStep(uint64_t key[8], byte step) {
     memset(&iterator, 0, 1);
 }
 
+void decryptRoundKey(uint64_t key[8], uint8_t step) {
+    byte iterator;
+    uint64_t temp;
+    for(iterator = (byte) (step - 1); iterator != 255; --iterator) {
+        reverseRotateBytes((byte *) key, (byte) (iterator % (bytesCount / 2) + 1));
+
+        key[0] -= keyАmplification[0];
+        key[1] -= keyАmplification[1];
+        key[2] -= keyАmplification[2];
+        key[3] -= keyАmplification[3];
+        key[4] -= keyАmplification[4];
+        key[5] -= keyАmplification[5];
+        key[6] -= keyАmplification[6];
+        key[7] -= keyАmplification[7];
+
+        key[1] = substitute(key[1], reverseSubstitutionBlock);
+        key[3] = substitute(key[3], reverseSubstitutionBlock);
+        key[4] = substitute(key[4], reverseSubstitutionBlock);
+        key[6] = substitute(key[6], reverseSubstitutionBlock);
+
+        sawUnswap(key);
+    }
+    memset(&iterator, 0, 1);
+}
+
+void printByteArrayInHex(const uint8_t *array, int size) {
+    size_t iterator;
+    for(iterator = 0; iterator <  size; ++iterator) {
+        if (iterator % 32 == 0 && iterator != 0) {
+            printf("\n");
+        }
+        printf("%02X ", array[iterator]);
+    }
+    printf("\n");
+}
+
 void purgeEncrypt(uint64_t data[8], uint64_t key[8]) {
     uint64_t temp;
     byte iterator;
@@ -148,7 +181,11 @@ void purgeEncrypt(uint64_t data[8], uint64_t key[8]) {
         data[6] += mask;
         data[7] += maskReverse;
 
-        roundKeyForStep(key, iterator);
+        roundKeyForStep(key, (uint8_t) (iterator + 1));
+
+        printf("%d round key\n", iterator);
+        printByteArrayInHex((const uint8_t *) key, bytesCount);
+
         roundKeyXor(data, key);
         sawSwap(data);
 
@@ -157,6 +194,8 @@ void purgeEncrypt(uint64_t data[8], uint64_t key[8]) {
         data[4] = substitute(data[4], substitutionBlock);
         data[6] = substitute(data[6], substitutionBlock);
 
+//        printf("%d - %llu %llu %llu %llu\n", iterator, data[1], data[3], data[4], data[6]);
+//        printf("rotate on %d\n", (byte)(iterator % (bytesCount / 2) + 1));
         rotateBytes((byte *) data, (byte)(iterator % (bytesCount / 2) + 1));
     }
 
@@ -165,20 +204,33 @@ void purgeEncrypt(uint64_t data[8], uint64_t key[8]) {
 
 void purgeDecrypt(uint64_t data[8], uint64_t key[8]) {
     uint64_t temp;
-    byte iterator = roundsCount - 1;
+    byte iterator;
+//    uint64_t keyTemp[8];
 
-    for(; iterator != 255; --iterator) {
+    // get final key
+    forAll(iterator, roundsCount) {
+        roundKeyForStep(key, (uint8_t) (iterator + 1));
+    }
 
+    for(iterator = roundsCount - 1; iterator != 255; --iterator) {
+        printf("step : %d", iterator);
         reverseRotateBytes((byte *) data, (byte)(iterator % (bytesCount / 2) + 1));
+//        printf("unrotate on %d\n", (byte)(iterator % (bytesCount / 2) + 1));
+//        printf("%d - %llu %llu %llu %llu\n", iterator, data[1], data[3], data[4], data[6]);
 
         data[1] = substitute(data[1], reverseSubstitutionBlock);
         data[3] = substitute(data[3], reverseSubstitutionBlock);
         data[4] = substitute(data[4], reverseSubstitutionBlock);
         data[6] = substitute(data[6], reverseSubstitutionBlock);
 
-        roundKeyForStep(key, iterator);
+        printf(" round key\n");
+        printByteArrayInHex((const uint8_t *) key, bytesCount);
+
         sawUnswap(data);
         roundKeyXor(data, key);
+
+        decryptRoundKey(key, (uint8_t) (iterator + 1));
+
 
         // round
         data[0] = rotateRight(data[0], 7);
