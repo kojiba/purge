@@ -9,7 +9,16 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include "purge.h"
+
+#define initRClock()                                      clock_t tic = clock(); \
+                                                          clock_t diff = 0, toc = 0;
+
+#define tickRClock()                                      toc = clock(); \
+                                                          diff = toc - tic; \
+                                                          tic = clock(); \
+                                                          printf("Elapsed: %f seconds\n", (double)(diff) / CLOCKS_PER_SEC);
 
 #define forAll(iterator, count) for(iterator = 0; iterator < (count); ++iterator)
 
@@ -59,7 +68,9 @@ int main() {
     printByteArrayInHex((const uint8_t *) key, bytesCount);
 
     printf("ciphered : \n");
+    initRClock();
     purgeEncrypt(data, key);
+    tickRClock();
     printByteArrayInHex((const uint8_t *) data, bytesCount);
 
     data2[0] = 1;
@@ -69,14 +80,23 @@ int main() {
     printf("key : \n");
     printByteArrayInHex((const uint8_t *) key, bytesCount);
 
+    tickRClock();
     purgeEncrypt(data2, key);
+    tickRClock();
     printf("ciphered 2 : \n");
     printByteArrayInHex((const uint8_t *) data2, bytesCount);
 
     printf("key2 : \n");
     printByteArrayInHex((const uint8_t *) key2, bytesCount);
 
+    tickRClock();
     purgeDecrypt(data2, key2);
+    tickRClock();
+    purgeDecrypt(data2, key2);
+    tickRClock();
+    purgeDecrypt(data2, key2);
+    tickRClock();
+
     printf("deciphered 2 : \n");
     printByteArrayInHex((const uint8_t *) data2, bytesCount);
 

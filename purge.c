@@ -15,7 +15,6 @@
 
 #include "purge.h"
 #include <string.h>
-#include <stdio.h>
 
 
 typedef uint8_t byte;

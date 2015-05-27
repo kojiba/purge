@@ -13,7 +13,6 @@
  *         |__/
  **/
 
-
 #ifndef __PURGE_H__
 #define __PURGE_H__
 
