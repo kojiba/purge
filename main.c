@@ -58,47 +58,48 @@ void printByteArrayInHex(const uint8_t *array, int size) {
 }
 
 int main() {
+    size_t iterator;
     uint64_t data[8] = {},
             key[8] = {}, data2[8] = {}, key2[8] = {};
 
-    printf("data : \n");
-    printByteArrayInHex((const uint8_t *) data, bytesCount);
-
-    printf("key : \n");
-    printByteArrayInHex((const uint8_t *) key, bytesCount);
-
-    printf("ciphered : \n");
+//    printf("data : \n");
+//    printByteArrayInHex((const uint8_t *) data, purgeBytesCount);
+//
+//    printf("key : \n");
+//    printByteArrayInHex((const uint8_t *) key, purgeBytesCount);
+//
+//    printf("ciphered : \n");
     initRClock();
-    purgeEncrypt(data, key);
-    tickRClock();
-    printByteArrayInHex((const uint8_t *) data, bytesCount);
+//    purgeEncrypt(data, key);
+//    tickRClock();
+//    printByteArrayInHex((const uint8_t *) data, purgeBytesCount);
+//
+//    data2[0] = 1;
+//
+//    printf("data2 : \n");
+//    printByteArrayInHex((const uint8_t *) data2, purgeBytesCount);
+//    printf("key : \n");
+//    printByteArrayInHex((const uint8_t *) key, purgeBytesCount);
+//
+//    tickRClock();
+//    purgeEncrypt(data2, key);
+//    tickRClock();
+//    printf("ciphered 2 : \n");
+//    printByteArrayInHex((const uint8_t *) data2, purgeBytesCount);
+//
+//    printf("key2 : \n");
+//    printByteArrayInHex((const uint8_t *) key2, purgeBytesCount);
 
-    data2[0] = 1;
+    forAll(iterator, 1024) {
+        tickRClock();
+        purgeEncrypt(data, key);
+        memset(key, 0, purgeBytesCount);
+//        printByteArrayInHex((const uint8_t *) data, purgeBytesCount);
+    }
 
-    printf("data2 : \n");
-    printByteArrayInHex((const uint8_t *) data2, bytesCount);
-    printf("key : \n");
-    printByteArrayInHex((const uint8_t *) key, bytesCount);
-
-    tickRClock();
-    purgeEncrypt(data2, key);
-    tickRClock();
-    printf("ciphered 2 : \n");
-    printByteArrayInHex((const uint8_t *) data2, bytesCount);
-
-    printf("key2 : \n");
-    printByteArrayInHex((const uint8_t *) key2, bytesCount);
-
-    tickRClock();
-    purgeDecrypt(data2, key2);
-    tickRClock();
-    purgeDecrypt(data2, key2);
-    tickRClock();
-    purgeDecrypt(data2, key2);
-    tickRClock();
-
-    printf("deciphered 2 : \n");
-    printByteArrayInHex((const uint8_t *) data2, bytesCount);
+//
+//    printf("deciphered 2 : \n");
+//    printByteArrayInHex((const uint8_t *) data2, purgeBytesCount);
 
     return 0;
 }
