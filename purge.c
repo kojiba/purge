@@ -18,6 +18,8 @@
 
 typedef uint8_t byte;
 
+#define roundsCount (bytesCount - 1)
+
 #define forAll(iterator, count) for(iterator = 0; iterator < (count); ++iterator)
 
 // 64 circular shift (rotates)
@@ -116,15 +118,26 @@ void roundKeyForStep(uint64_t key[8], byte step) {
         key[3] = substitute(key[3], substitutionBlock);
         key[4] = substitute(key[4], substitutionBlock);
         key[6] = substitute(key[6], substitutionBlock);
-        rotateBytes((byte *) key, (byte) (iterator + 1));
+
+        key[0] += keyАmplification[0];
+        key[1] += keyАmplification[1];
+        key[2] += keyАmplification[2];
+        key[3] += keyАmplification[3];
+        key[4] += keyАmplification[4];
+        key[5] += keyАmplification[5];
+        key[6] += keyАmplification[6];
+        key[7] += keyАmplification[7];
+
+        rotateBytes((byte *) key, (byte) (iterator % (bytesCount / 2) + 1));
     }
+    memset(&iterator, 0, 1);
 }
 
-void purgeChiper(uint64_t data[8], uint64_t key[8]) {
+void purgeEncrypt(uint64_t data[8], uint64_t key[8]) {
     uint64_t temp;
     byte iterator;
 
-    forAll(iterator, bytesCount - 1) { // 63 rounds [0 : 62]
+    forAll(iterator, roundsCount) { // 63 rounds [0 : 62]
         // round
         data[0] = rotateLeft(data[0], 7);
         data[1] ^= palindromeMask;
@@ -135,60 +148,48 @@ void purgeChiper(uint64_t data[8], uint64_t key[8]) {
         data[6] += mask;
         data[7] += maskReverse;
 
+        roundKeyForStep(key, iterator);
         roundKeyXor(data, key);
         sawSwap(data);
-
-        roundKeyForStep(key, iterator);
 
         data[1] = substitute(data[1], substitutionBlock);
         data[3] = substitute(data[3], substitutionBlock);
         data[4] = substitute(data[4], substitutionBlock);
         data[6] = substitute(data[6], substitutionBlock);
-        rotateBytes((byte *) data, (byte)(iterator + 1));
+
+        rotateBytes((byte *) data, (byte)(iterator % (bytesCount / 2) + 1));
     }
 
-    memset(key, bytesCount, 0);
+    memset(key, 0, bytesCount);
 }
 
-void purgeDeciper(uint64_t data[8], uint64_t key[8]) {
+void purgeDecrypt(uint64_t data[8], uint64_t key[8]) {
     uint64_t temp;
-    size_t iterator;
-    uint64_t deciperRoundKey[8];
+    byte iterator = roundsCount - 1;
 
-    forAll(iterator, bytesCount - 1) {
-        // key unswap saw
-        sawUnswap(key);
-        roundKeySubstraction(key, data);
+    for(; iterator != 255; --iterator) {
+
+        reverseRotateBytes((byte *) data, (byte)(iterator % (bytesCount / 2) + 1));
+
+        data[1] = substitute(data[1], reverseSubstitutionBlock);
+        data[3] = substitute(data[3], reverseSubstitutionBlock);
+        data[4] = substitute(data[4], reverseSubstitutionBlock);
+        data[6] = substitute(data[6], reverseSubstitutionBlock);
+
+        roundKeyForStep(key, iterator);
         sawUnswap(data);
+        roundKeyXor(data, key);
 
         // round
-        data[0] = rotateLeft(data[0], 7);
-        data[1] += palindromeMask;
-        data[2] += palindromeMaskReverse;
-        data[3] = rotateLeft(data[3], 13);
-        data[4] += data[3];
-        data[5] += data[0];
-        data[6] ^= mask;
-        data[7] ^= maskReverse;
-
-        // key add
-        data[0] ^= key[0];
-        data[1] ^= key[1];
-        data[2] ^= key[2];
-        data[3] ^= key[3];
-        data[4] ^= key[4];
-        data[5] ^= key[5];
-        data[6] ^= key[6];
-        data[7] ^= key[7];
+        data[0] = rotateRight(data[0], 7);
+        data[1] ^= palindromeMask;
+        data[2] ^= palindromeMaskReverse;
+        data[3] = rotateRight(data[3], 13);
+        data[4] -= data[3];
+        data[5] -= data[0];
+        data[6] -= mask;
+        data[7] -= maskReverse;
     }
 
-    // data sub
-    data[0] -= 997;
-    data[1] -= 11;
-    data[2] -= 337;
-    data[3] -= 5;
-    data[4] -= 599;
-    data[5] -= 13;
-    data[6] -= 3527;
-    data[7] -= 19;
+    memset(key, 0, bytesCount);
 }

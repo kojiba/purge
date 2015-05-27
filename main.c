@@ -8,6 +8,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include "purge.h"
 
 void printByteArrayInHex(const uint8_t *array, size_t size) {
@@ -29,27 +30,34 @@ int main() {
     uint64_t data[8] = {},
             key[8] = {}, data2[8] = {}, key2[8] = {};
 
-    data[0] = 1;
-    key[0] = 1;
-
     printf("data : \n");
     printByteArrayInHex((const uint8_t *) data, bytesCount);
 
     printf("key : \n");
     printByteArrayInHex((const uint8_t *) key, bytesCount);
 
-    printf("chipered : \n");
-    purgeChiper(data, key);
+    printf("ciphered : \n");
+    purgeEncrypt(data, key);
     printByteArrayInHex((const uint8_t *) data, bytesCount);
 
     data2[0] = 1;
 
     printf("data2 : \n");
-    printByteArrayInHex((const uint8_t *) data2, 8 * sizeof(uint64_t));
+    printByteArrayInHex((const uint8_t *) data2, bytesCount);
 
-    printf("chipered 2 : \n");
-    purgeChiper(data2, key2);
-    printByteArrayInHex((const uint8_t *) data2, 8 * sizeof(uint64_t));
+    printf("key : \n");
+    printByteArrayInHex((const uint8_t *) key, bytesCount);
+
+    printf("ciphered 2 : \n");
+    purgeEncrypt(data2, key);
+    printByteArrayInHex((const uint8_t *) data2, bytesCount);
+
+    printf("key2 : \n");
+    printByteArrayInHex((const uint8_t *) key2, bytesCount);
+
+    printf("deciphered 2 : \n");
+    purgeDecrypt(data2, key2);
+    printByteArrayInHex((const uint8_t *) data2, bytesCount);
 
 
     // ------------------------------------------------ deciper

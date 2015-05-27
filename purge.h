@@ -19,13 +19,24 @@
 
 #include <stdint.h>
 
+static const uint8_t bytesCount = 64;
+
 static const uint64_t palindromeMask        = 0xAAAAAAAA55555555;
 static const uint64_t palindromeMaskReverse = 0x55555555AAAAAAAA;
 
 static const uint64_t mask        = 0x8888888888888888;
 static const uint64_t maskReverse = 0x1111111111111111;
 
-static const uint8_t bytesCount = 64;
+static const uint64_t keyАmplification[8] = {
+    0x2232242252262272,
+    0x0223224225226227,
+    0x0022322422522623,
+    0x0002232242252262,
+    0x0000223224225225,
+    0x0000022322422522,
+    0x0000002232242251,
+    0x0000000223224220
+};
 
 static const uint8_t substitutionBlock[256] = {
         0x68, 0x59, 0xB5, 0x76, 0x0F, 0x94, 0x80, 0x1F, 0x63, 0xE8, 0x21, 0x33, 0x74, 0x41, 0x55, 0x16,
@@ -65,6 +76,7 @@ static const uint8_t reverseSubstitutionBlock[256] = {
         0x18, 0x22, 0x37, 0x7F, 0xF0, 0xE8, 0xFF, 0x45, 0xF2, 0xB3, 0xC0, 0xEA, 0xDC, 0x67, 0x53, 0x7D,
 };
 
-void purgeChiper(uint64_t data[8], uint64_t key[8]); // key and data will be changed
+void purgeEncrypt(uint64_t data[8], uint64_t key[8]); // key and data will be changed
+void purgeDecrypt(uint64_t data[8], uint64_t key[8]); // key and data will be changed
 
 #endif /*__PURGE_H__*/
