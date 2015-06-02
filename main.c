@@ -11,6 +11,7 @@
 #include <string.h>
 #include <time.h>
 #include "purge.h"
+#include "evasion.h"
 
 #define initRClock()                                      clock_t tic = clock(); \
                                                           clock_t diff = 0, toc = 0;
@@ -65,11 +66,21 @@ int main() {
     initRClock();
     tickRClock();
 
-    forAll(iterator, 1024) {
-        tickRClock();
-        purgeEncrypt(data, key);
-        memset(key, 0, purgeBytesCount);
-    }
+//    forAll(iterator, 1024) {
+//        tickRClock();
+        printf("data : \n");
+        printByteArrayInHex((const uint8_t *) data, evasionBytesCount);
+        evasionHash(data);
+        printf("hash : \n");
+        printByteArrayInHex((const uint8_t *) data, evasionBytesCount);
+        memset(data, 0, evasionBytesCount);
+        data[0] = 1;
+        printf("data : \n");
+        printByteArrayInHex((const uint8_t *) data, evasionBytesCount);
+        evasionHash(data);
+        printf("hash : \n");
+        printByteArrayInHex((const uint8_t *) data, evasionBytesCount);
+//    }
 
     return 0;
 }
