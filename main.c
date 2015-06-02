@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <stdlib.h>
 #include "purge.h"
 #include "evasion.h"
 
@@ -58,29 +59,43 @@ void printByteArrayInHex(const uint8_t *array, int size) {
     printf("\n");
 }
 
+void* encryptPurgeEvasion(const void *text, size_t size, uint64_t key[8]) { // key changed and data not
+    size_t iterator;
+    uint8_t *textTemp = 0;
+    size_t addition = size % purgeBytesCount;
+    size_t cipherCount = size / purgeBytesCount;
+    uint64_t keyTemp[8];
+
+    if(addition != 0) {
+        textTemp = malloc(size + purgeBytesCount - addition);
+        memcpy(textTemp, text, size);
+        memset(textTemp, 0, purgeBytesCount - addition); // add some zeros
+        ++cipherCount;
+    } else {
+        textTemp = malloc(size);
+        memcpy(textTemp, text, size);
+    }
+
+    forAll(iterator, cipherCount) {
+        evasionHash(key);
+        memcpy(keyTemp, key, purgeBytesCount);
+        purgeEncrypt((uint64_t*) (textTemp + iterator * purgeBytesCount), keyTemp);
+        memset(keyTemp, 0, purgeBytesCount);
+    }
+    return textTemp;
+}
+
 int main() {
     size_t iterator;
-    uint64_t data[8] = {},
-            key[8] = {};
+    char *text = malloc(10);
+    memcpy(text, "0123456789", 10);
 
-    initRClock();
-    tickRClock();
+    uint64_t key[8] = {};
+    memcpy(key, "123456789012345678901234567890123456789012345678901234567890123", 64);
 
-//    forAll(iterator, 1024) {
-//        tickRClock();
-        printf("data : \n");
-        printByteArrayInHex((const uint8_t *) data, evasionBytesCount);
-        evasionHash(data);
-        printf("hash : \n");
-        printByteArrayInHex((const uint8_t *) data, evasionBytesCount);
-        memset(data, 0, evasionBytesCount);
-        data[0] = 1;
-        printf("data : \n");
-        printByteArrayInHex((const uint8_t *) data, evasionBytesCount);
-        evasionHash(data);
-        printf("hash : \n");
-        printByteArrayInHex((const uint8_t *) data, evasionBytesCount);
-//    }
+    char *encrypted = encryptPurgeEvasion(text, strlen(text), key);
+
+    printByteArrayInHex((const uint8_t *) encrypted, 64);
 
     return 0;
 }
