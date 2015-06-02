@@ -19,7 +19,7 @@
 #include <stdint.h>
 
 static const uint8_t evasionBytesCount  = 64;
-static const uint8_t evasionRoundsCount = 31;
+static const uint8_t evasionRoundsCount = 17;
 
 static const uint64_t evasionAmplificationConstants[8] = {
         0x1234567890123456, // zero diagonal some and
