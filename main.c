@@ -48,7 +48,7 @@ void printByteArrayInBin(const uint8_t *array, size_t size) {
 }
 
 
-void printByteArrayInHex(const uint8_t *array, int size) {
+void printByteArrayInHex(const uint8_t *array, size_t size) {
     size_t iterator;
     for(iterator = 0; iterator <  size; ++iterator) {
         if (iterator % 32 == 0 && iterator != 0) {
@@ -59,43 +59,113 @@ void printByteArrayInHex(const uint8_t *array, int size) {
     printf("\n");
 }
 
-void* encryptPurgeEvasion(const void *text, size_t size, uint64_t key[8]) { // key changed and data not
-    size_t iterator;
-    uint8_t *textTemp = 0;
-    size_t addition = size % purgeBytesCount;
-    size_t cipherCount = size / purgeBytesCount;
+#define nil ((void*)0)
+typedef uint8_t byte;
+
+void* encryptPurgeEvasion(const void *text, uint64_t size, uint64_t key[8], uint64_t *cryptedSize) { // key changed and data not
+    size_t   iterator;
+    uint8_t *textTemp    = nil;
+    size_t   totalSize   = size + sizeof(uint64_t);
+    size_t   cipherCount = totalSize / purgeBytesCount;
+    size_t   addition    = totalSize % purgeBytesCount;
+
     uint64_t keyTemp[8];
 
     if(addition != 0) {
-        textTemp = malloc(size + purgeBytesCount - addition);
-        memcpy(textTemp, text, size);
-        memset(textTemp, 0, purgeBytesCount - addition); // add some zeros
+        totalSize += purgeBytesCount - addition;
         ++cipherCount;
-    } else {
-        textTemp = malloc(size);
-        memcpy(textTemp, text, size);
     }
 
-    forAll(iterator, cipherCount) {
-        evasionHash(key);
-        memcpy(keyTemp, key, purgeBytesCount);
-        purgeEncrypt((uint64_t*) (textTemp + iterator * purgeBytesCount), keyTemp);
-        memset(keyTemp, 0, purgeBytesCount);
+    textTemp = malloc(totalSize);
+
+    if(textTemp != nil) {
+        *cryptedSize = 0;
+
+        memcpy(textTemp, &size, sizeof(uint64_t));       // add size in front
+        memcpy(textTemp + sizeof(uint64_t), text, size); // copy other text
+
+        if (addition != 0) { // add some zeros if needed
+            memset(textTemp + size + sizeof(uint64_t), 0, purgeBytesCount - addition);
+        }
+
+        printf("Prepared Data:\n");
+        printByteArrayInHex((const byte *) textTemp, totalSize);
+
+        forAll(iterator, cipherCount) {
+            evasionHash(key);
+            memcpy(keyTemp, key, purgeBytesCount);
+            purgeEncrypt((uint64_t *) (textTemp + iterator * purgeBytesCount), keyTemp);
+            memset(keyTemp, 0, purgeBytesCount);
+        }
+        *cryptedSize = totalSize; // store
     }
     return textTemp;
 }
 
-int main() {
-    size_t iterator;
-    char *text = malloc(10);
-    memcpy(text, "0123456789", 10);
+void* decryptPurgeEvasion(const void *text, uint64_t size, uint64_t key[8], uint64_t *encryptedSize) { // key changed and data not
+    size_t   iterator;
+    uint8_t *textTemp    = nil,
+            *plainText   = nil;
+    size_t   cipherCount = size / purgeBytesCount;
+    uint64_t sizeOfText;
+    uint64_t keyTemp[8];
 
-    uint64_t key[8] = {};
-    memcpy(key, "123456789012345678901234567890123456789012345678901234567890123", 64);
+    if(size % purgeBytesCount) {
+        printf("Bad data size. Must be multiple of 64. Data size in bytes\n");
+        return nil;
+    }
 
-    char *encrypted = encryptPurgeEvasion(text, strlen(text), key);
+    textTemp = malloc(size);
 
-    printByteArrayInHex((const uint8_t *) encrypted, 64);
+    if(textTemp != nil) {
+        *encryptedSize = 0;
+        memcpy(textTemp, text, size); // add size in front
+
+        forAll(iterator, cipherCount) {
+            evasionHash(key);
+            memcpy(keyTemp, key, purgeBytesCount);
+            purgeDecrypt((uint64_t *) (textTemp + iterator * purgeBytesCount), keyTemp);
+            memset(keyTemp, 0, purgeBytesCount);
+        }
+
+        // get size
+        memcpy(&sizeOfText, textTemp, sizeof(uint64_t));
+        plainText = malloc(sizeOfText);
+        if(plainText != nil) {
+            memcpy(plainText, textTemp + sizeof(uint64_t), sizeOfText);
+            *encryptedSize = sizeOfText; // store
+        }
+        free(textTemp);
+    }
+    return plainText;
+}
+
+int main(int argc, const char *argv[]) {
+
+    uint64_t key[8] = {}, data[8] = {};
+    uint64_t size;
+
+
+    memcpy(key, "Hello world!", sizeof("Hello world!"));
+    memcpy(data, key, purgeBytesCount);
+    printf("Key:\n");
+    printByteArrayInHex((const byte *) key, purgeBytesCount);
+
+    printf("Data:\n");
+    printByteArrayInHex((const byte *) data, purgeBytesCount);
+
+    printf("Cipher Text:\n");
+    byte *cipherText = encryptPurgeEvasion(data, sizeof("Hello world!"), key, &size);
+    printByteArrayInHex(cipherText, size);
+
+    printf("Key:\n");
+    memset(key, 0, purgeBytesCount);
+    memcpy(key, "Hello world!", sizeof("Hello world!"));
+    printByteArrayInHex((const byte *) key, purgeBytesCount);
+
+    printf("Decipher Text:\n");
+    byte *decipherText = decryptPurgeEvasion(cipherText, size, key, &size);
+    printByteArrayInHex(decipherText, size);
 
     return 0;
 }
