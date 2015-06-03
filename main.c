@@ -174,7 +174,9 @@ int main(int argc, const char *argv[]) {
 
     printf("Decipher Text:\n");
     byte *decipherText = decryptPurgeEvasion(cipherText, size, key, &size);
+    printf("decipher size : %llu\n", size);
     printf("%s", decipherText);
+
 
     free(cipherText);
     free(decipherText);
