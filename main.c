@@ -88,9 +88,6 @@ void* encryptPurgeEvasion(const void *text, uint64_t size, uint64_t key[8], uint
             memset(textTemp + size + sizeof(uint64_t), 0, purgeBytesCount - addition);
         }
 
-        printf("Prepared Data:\n");
-        printByteArrayInHex((const byte *) textTemp, totalSize);
-
         forAll(iterator, cipherCount) {
             evasionHash(key);
             memcpy(keyTemp, key, purgeBytesCount);
@@ -145,6 +142,18 @@ int main(int argc, const char *argv[]) {
     uint64_t key[8] = {}, data[8] = {};
     uint64_t size;
 
+    char *stringToEncrypt = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, \n"
+            "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. \n"
+            "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut\n"
+            "aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in\n"
+            "voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint\n"
+            "occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit\n"
+            "anim id est laborum.";
+
+    uint64_t stringLength = strlen(stringToEncrypt) + 1;
+
+    printf("size : %llu\n", stringLength);
+
 
     memcpy(key, "Hello world!", sizeof("Hello world!"));
     memcpy(data, key, purgeBytesCount);
@@ -152,10 +161,10 @@ int main(int argc, const char *argv[]) {
     printByteArrayInHex((const byte *) key, purgeBytesCount);
 
     printf("Data:\n");
-    printByteArrayInHex((const byte *) data, purgeBytesCount);
+    printByteArrayInHex((const uint8_t *) stringToEncrypt, stringLength);
 
     printf("Cipher Text:\n");
-    byte *cipherText = encryptPurgeEvasion(data, sizeof("Hello world!"), key, &size);
+    byte *cipherText = encryptPurgeEvasion(stringToEncrypt, stringLength, key, &size);
     printByteArrayInHex(cipherText, size);
 
     printf("Key:\n");
@@ -165,7 +174,10 @@ int main(int argc, const char *argv[]) {
 
     printf("Decipher Text:\n");
     byte *decipherText = decryptPurgeEvasion(cipherText, size, key, &size);
-    printByteArrayInHex(decipherText, size);
+    printf("%s", decipherText);
+
+    free(cipherText);
+    free(decipherText);
 
     return 0;
 }
