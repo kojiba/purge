@@ -11,8 +11,7 @@
 #include <string.h>
 #include <time.h>
 #include <stdlib.h>
-#include "purge.h"
-#include "evasion.h"
+#include "PurgeEvasionUtils.h"
 
 #define initRClock()                                      clock_t tic = clock(); \
                                                           clock_t diff = 0, toc = 0;
@@ -59,86 +58,9 @@ void printByteArrayInHex(const uint8_t *array, size_t size) {
     printf("\n");
 }
 
-#define nil ((void*)0)
 typedef uint8_t byte;
 
-void* encryptPurgeEvasion(const void *text, uint64_t size, uint64_t key[8], uint64_t *cryptedSize) { // key changed and data not
-    size_t   iterator;
-    uint8_t *textTemp    = nil;
-    size_t   totalSize   = size + sizeof(uint64_t);
-    size_t   cipherCount = totalSize / purgeBytesCount;
-    size_t   addition    = totalSize % purgeBytesCount;
-
-    uint64_t keyTemp[8];
-
-    if(addition != 0) {
-        totalSize += purgeBytesCount - addition;
-        ++cipherCount;
-    }
-
-    textTemp = malloc(totalSize);
-
-    if(textTemp != nil) {
-        *cryptedSize = 0;
-
-        memcpy(textTemp, &size, sizeof(uint64_t));       // add size in front
-        memcpy(textTemp + sizeof(uint64_t), text, size); // copy other text
-
-        if (addition != 0) { // add some zeros if needed
-            memset(textTemp + size + sizeof(uint64_t), 0, purgeBytesCount - addition);
-        }
-
-        forAll(iterator, cipherCount) {
-            evasionHash(key);
-            memcpy(keyTemp, key, purgeBytesCount);
-            purgeEncrypt((uint64_t *) (textTemp + iterator * purgeBytesCount), keyTemp);
-            memset(keyTemp, 0, purgeBytesCount);
-        }
-        *cryptedSize = totalSize; // store
-    }
-    return textTemp;
-}
-
-void* decryptPurgeEvasion(const void *text, uint64_t size, uint64_t key[8], uint64_t *encryptedSize) { // key changed and data not
-    size_t   iterator;
-    uint8_t *textTemp    = nil,
-            *plainText   = nil;
-    size_t   cipherCount = size / purgeBytesCount;
-    uint64_t sizeOfText;
-    uint64_t keyTemp[8];
-
-    if(size % purgeBytesCount) {
-        printf("Bad data size. Must be multiple of 64. Data size in bytes\n");
-        return nil;
-    }
-
-    textTemp = malloc(size);
-
-    if(textTemp != nil) {
-        *encryptedSize = 0;
-        memcpy(textTemp, text, size); // add size in front
-
-        forAll(iterator, cipherCount) {
-            evasionHash(key);
-            memcpy(keyTemp, key, purgeBytesCount);
-            purgeDecrypt((uint64_t *) (textTemp + iterator * purgeBytesCount), keyTemp);
-            memset(keyTemp, 0, purgeBytesCount);
-        }
-
-        // get size
-        memcpy(&sizeOfText, textTemp, sizeof(uint64_t));
-        plainText = malloc(sizeOfText);
-        if(plainText != nil) {
-            memcpy(plainText, textTemp + sizeof(uint64_t), sizeOfText);
-            *encryptedSize = sizeOfText; // store
-        }
-        free(textTemp);
-    }
-    return plainText;
-}
-
-int main(int argc, const char *argv[]) {
-
+void cipherTest() {
     uint64_t key[8] = {}, data[8] = {};
     uint64_t size;
 
@@ -180,6 +102,58 @@ int main(int argc, const char *argv[]) {
 
     free(cipherText);
     free(decipherText);
+}
+
+void hashTest() {
+    uint64_t dest[8];
+
+    char *stringToHash = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, \n"
+            "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. \n"
+            "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut\n"
+            "aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in\n"
+            "voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint\n"
+            "occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit\n"
+            "anim id est laborum.";
+
+                     // diff here | 1 bit
+    char *stringToHash2 = "Lorem iqsum dolor sit amet, consectetur adipiscing elit, \n"
+            "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. \n"
+            "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut\n"
+            "aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in\n"
+            "voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint\n"
+            "occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit\n"
+            "anim id est laborum.";
+
+    uint64_t stringLength = strlen(stringToHash);
+
+    evasionHashData(stringToHash, stringLength, dest);
+    printf("Hash:\n");
+    printByteArrayInHex((const byte *) dest, evasionBytesCount);
+
+    memset(dest, 0, evasionBytesCount);
+
+    printf("Hash 2:\n");
+    evasionHashData(stringToHash2, stringLength, dest);
+    printByteArrayInHex((const byte *) dest, evasionBytesCount);
+}
+
+int main(int argc, const char *argv[]) {
+
+//    cipherTest();
+    hashTest();
+//
+//    uint64_t data[8] = {};
+//
+//    evasionHash(data);
+//    printf("Hash:\n");
+//    printByteArrayInHex((const byte *) data, evasionBytesCount);
+//
+//    memset(data, 0, evasionBytesCount);
+//    data[1] = 1;
+//
+//    printf("Hash 2:\n");
+//    evasionHash(data);
+//    printByteArrayInHex((const byte *) data, evasionBytesCount);
 
     return 0;
 }

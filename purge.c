@@ -71,10 +71,10 @@ void rotateBytes(byte *data, byte count) {
     if(count % purgeBytesCount) {
         byte diff = (byte) (purgeBytesCount - count);
         byte temp[purgeBytesCount];
-        memcpy(temp, data, count);
-        memcpy(data, data + count, diff);
-        memcpy(data + diff, temp, count);
-        memset(temp, 0, purgeBytesCount);
+        memcpy((byte*) temp,         data,          count);
+        memcpy(        data,         data + count,  diff);
+        memcpy(        data + diff,  (byte*) temp,  count);
+        memset((byte*) temp,         0,             purgeBytesCount);
     }
 }
 
@@ -82,10 +82,10 @@ void reverseRotateBytes(byte *data, byte count) {
     if(count % purgeBytesCount) {
         byte temp[purgeBytesCount];
         byte diff = (byte) (purgeBytesCount - count);
-        memcpy(temp, data + diff, count);
-        memcpy(data + count, data, diff);
-        memcpy(data, temp, count);
-        memset(temp, 0, purgeBytesCount);
+        memcpy(temp,         data + diff, count);
+        memcpy(data + count, data,        diff);
+        memcpy(data,         temp,        count);
+        memset(temp,         0,           purgeBytesCount);
     }
 }
 
@@ -167,7 +167,7 @@ void purgeEncrypt(uint64_t data[8], uint64_t key[8]) {
         rotateBytes((byte *) data, (byte)(iterator % (purgeBytesCount / 2) + 1));
     }
 
-    memset(key, 0, purgeBytesCount);
+    memset((byte *)key, 0, purgeBytesCount);
 }
 
 void purgeDecrypt(uint64_t data[8], uint64_t key[8]) {
@@ -204,5 +204,5 @@ void purgeDecrypt(uint64_t data[8], uint64_t key[8]) {
         data[0] = rotateRight(data[0], 7);
     }
 
-    memset(key, 0, purgeBytesCount);
+    memset((byte *) key, 0, purgeBytesCount);
 }
