@@ -18,7 +18,7 @@
 #include "PurgeEvasionUtils.h"
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
+//#include <stdio.h>
 
 #define nil ((void*)0)
 #define forAll(iterator, count) for(iterator = 0; iterator < (count); ++iterator)
@@ -108,9 +108,9 @@ void evasionHashData(const void *text, uint64_t size, uint64_t *outputHash) {
 
     forAll(iterator, hashCount) {
         memcpy((uint8_t*) &hashTemp[0] + half, text + iterator * half, half);
-        printf("%llu - %llu %llu %llu %llu %llu %llu %llu %llu\n",
-               iterator, hashTemp[0], hashTemp[1], hashTemp[2], hashTemp[3],
-                         hashTemp[4], hashTemp[5], hashTemp[6], hashTemp[7]);
+//        printf("%llu - %llu %llu %llu %llu %llu %llu %llu %llu\n",
+//               iterator, hashTemp[0], hashTemp[1], hashTemp[2], hashTemp[3],
+//                         hashTemp[4], hashTemp[5], hashTemp[6], hashTemp[7]);
         evasionHash(hashTemp);
     }
 

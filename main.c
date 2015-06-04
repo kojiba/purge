@@ -127,7 +127,7 @@ void hashTest() {
     uint64_t stringLength = strlen(stringToHash);
 
     evasionHashData(stringToHash, stringLength, dest);
-    printf("Hash:\n");
+    printf("\nHash:\n");
     printByteArrayInHex((const byte *) dest, evasionBytesCount);
 
     memset(dest, 0, evasionBytesCount);
@@ -139,7 +139,7 @@ void hashTest() {
 
 int main(int argc, const char *argv[]) {
 
-//    cipherTest();
+    cipherTest();
     hashTest();
 //
 //    uint64_t data[8] = {};
