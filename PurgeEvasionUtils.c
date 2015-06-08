@@ -18,7 +18,10 @@
 #include "PurgeEvasionUtils.h"
 #include <string.h>
 #include <stdlib.h>
-//#include <stdio.h>
+#include <stdio.h>
+
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
 
 #define nil ((void*)0)
 #define forAll(iterator, count) for(iterator = 0; iterator < (count); ++iterator)
@@ -122,3 +125,5 @@ void evasionHashData(const void *text, uint64_t size, uint64_t *outputHash) {
     // final
     memcpy(outputHash, hashTemp, evasionBytesCount);
 }
+
+#pragma GCC pop_options

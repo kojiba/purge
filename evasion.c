@@ -17,6 +17,10 @@
 
 #include <string.h>
 
+
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
 typedef uint8_t byte;
 
 #define forAll(iterator, count) for(iterator = 0; iterator < (count); ++iterator)
@@ -64,7 +68,7 @@ void rotateBytesEvasion(byte *data, byte count) {
 
 void evasionHash(uint64_t data[8]) {
     byte iterator;
-    size_t temp;
+    uint64_t temp;
     forAll(iterator, evasionRoundsCount) {
         // amplification
         data[0] += evasionAmplificationConstants[0];
@@ -99,3 +103,5 @@ void evasionHash(uint64_t data[8]) {
         rotateBytesEvasion((byte *) data, (byte) (iterator + 1));
     }
 }
+
+#pragma GCC pop_options

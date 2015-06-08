@@ -137,23 +137,12 @@ void hashTest() {
     printByteArrayInHex((const byte *) dest, evasionBytesCount);
 }
 
-int main(int argc, const char *argv[]) {
+#define rotateLeft(data,  shift) (((data) << shift) | ((data) >> (64 - shift)))
 
+int main(int argc, const char *argv[]) {
+//
     cipherTest();
     hashTest();
-//
-//    uint64_t data[8] = {};
-//
-//    evasionHash(data);
-//    printf("Hash:\n");
-//    printByteArrayInHex((const byte *) data, evasionBytesCount);
-//
-//    memset(data, 0, evasionBytesCount);
-//    data[1] = 1;
-//
-//    printf("Hash 2:\n");
-//    evasionHash(data);
-//    printByteArrayInHex((const byte *) data, evasionBytesCount);
 
     return 0;
 }

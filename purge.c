@@ -16,6 +16,9 @@
 #include "purge.h"
 #include <string.h>
 
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
 typedef uint8_t byte;
 
 #define forAll(iterator, count) for(iterator = 0; iterator < (count); ++iterator)
@@ -206,3 +209,5 @@ void purgeDecrypt(uint64_t data[8], uint64_t key[8]) {
 
     memset((byte *) key, 0, purgeBytesCount);
 }
+
+#pragma GCC pop_options
