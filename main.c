@@ -74,6 +74,8 @@ void cipherTest() {
 
     uint64_t stringLength = strlen(stringToEncrypt) + 1;
 
+    printf("\n Chiper test --------------------------------\n");
+
     printf("size : %llu\n", stringLength);
 
 
@@ -126,6 +128,8 @@ void hashTest() {
 
     uint64_t stringLength = strlen(stringToHash);
 
+    printf("\n hashTest --------------------------------\n");
+
     evasionHashData(stringToHash, stringLength, dest);
     printf("\nHash:\n");
     printByteArrayInHex((const byte *) dest, evasionBytesCount);
@@ -137,12 +141,29 @@ void hashTest() {
     printByteArrayInHex((const byte *) dest, evasionBytesCount);
 }
 
-#define rotateLeft(data,  shift) (((data) << shift) | ((data) >> (64 - shift)))
+void simpleCollisionTest() {
+    size_t iterator;
+    uint64_t data[8] = {};
+
+    printf("\n hash collision Test --------------------------------\n");
+
+    forAll(iterator, 13) {
+        memset((byte *) data, 0, evasionBytesCount);
+        data[0] = iterator;
+        evasionHash(data);
+        printf("Hash %lu:\n", iterator);
+        printByteArrayInHex((const byte *) data, evasionBytesCount);
+    }
+}
 
 int main(int argc, const char *argv[]) {
 //
     cipherTest();
     hashTest();
+
+    simpleCollisionTest();
+//                   0x1234567890123456
+//    printf("%llu", 0xFFFFFFFFFFFFFFFF + 1);
 
     return 0;
 }

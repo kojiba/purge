@@ -1,6 +1,6 @@
 /**
  * evasion.h
- * 512-bit block hash function (pseudo-rand gen)
+ * 512-bit block pseudo-rand gen
  * Author Kucheruavyu Ilya (kojiba@ro.ru)
  * 06/02/2015 Ukraine Kharkiv
  *  _         _ _ _
