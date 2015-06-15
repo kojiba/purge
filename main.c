@@ -60,6 +60,33 @@ void printByteArrayInHex(const uint8_t *array, size_t size) {
 
 typedef uint8_t byte;
 
+void cipherTestSimple() {
+    uint64_t key[8] = {}, data[8] = {};
+
+    printf("Data:\n");
+    printByteArrayInHex((const uint8_t *) data, purgeBytesCount);
+
+    printf("Key:\n");
+    printByteArrayInHex((const uint8_t *) key, purgeBytesCount);
+
+    purgeEncrypt(data, key);
+    printf("Ciphered:\n");
+    printByteArrayInHex((const uint8_t *) data, purgeBytesCount);
+
+    memset(key, 0, purgeBytesCount);
+    memset(data, 0, purgeBytesCount);
+    data[0] = 1;
+    printf("Data:\n");
+    printByteArrayInHex((const uint8_t *) data, purgeBytesCount);
+    printf("Key:\n");
+    printByteArrayInHex((const uint8_t *) key, purgeBytesCount);
+
+    purgeEncrypt(data, key);
+    printf("Ciphered 2:\n");
+    printByteArrayInHex((const uint8_t *) data, purgeBytesCount);
+
+}
+
 void cipherTest() {
     uint64_t key[8] = {}, data[8] = {};
     uint64_t size;
@@ -145,7 +172,7 @@ void simpleCollisionTest() {
     size_t iterator;
     uint64_t data[8] = {};
 
-    printf("\n hash collision Test --------------------------------\n");
+    printf("\n rand collision Test --------------------------------\n");
 
     forAll(iterator, 13) {
         memset((byte *) data, 0, evasionBytesCount);
@@ -158,12 +185,11 @@ void simpleCollisionTest() {
 
 int main(int argc, const char *argv[]) {
 //
+    cipherTestSimple();
     cipherTest();
     hashTest();
-
+//
     simpleCollisionTest();
-//                   0x1234567890123456
-//    printf("%llu", 0xFFFFFFFFFFFFFFFF + 1);
 
     return 0;
 }
