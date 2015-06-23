@@ -66,7 +66,7 @@ void rotateBytesEvasion(byte *data, byte count) {
     }
 }
 
-void evasionHash(uint64_t data[8]) {
+void evasionRand(uint64_t data[8]) {
     byte iterator;
     uint64_t temp;
     forAll(iterator, evasionRoundsCount) {

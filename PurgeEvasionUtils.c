@@ -25,6 +25,7 @@
 
 #define nil ((void*)0)
 #define forAll(iterator, count) for(iterator = 0; iterator < (count); ++iterator)
+#define xor(first, second)
 
 void* encryptPurgeEvasion(const void *text, uint64_t size, uint64_t key[8], uint64_t *cryptedSize) { // key changed and data not
     uint64_t  iterator;
@@ -53,9 +54,9 @@ void* encryptPurgeEvasion(const void *text, uint64_t size, uint64_t key[8], uint
         }
 
         forAll(iterator, cipherCount) {
-            evasionHash(key);
+            evasionRand(key);
             memcpy(keyTemp, key, purgeBytesCount);
-            purgeEncrypt((uint64_t *) (textTemp + iterator * purgeBytesCount), keyTemp);
+            purgeEncrypt((uint64_t *) (textTemp + iterator * purgeBytesCount), (uint64_t*) keyTemp);
             memset(keyTemp, 0, purgeBytesCount);
         }
         *cryptedSize = totalSize; // store
@@ -83,7 +84,7 @@ void* decryptPurgeEvasion(const void *text, uint64_t size, uint64_t key[8], uint
         memcpy(textTemp, text, size); // add size in front
 
         forAll(iterator, cipherCount) {
-            evasionHash(key);
+            evasionRand(key);
             memcpy(keyTemp, key, purgeBytesCount);
             purgeDecrypt((uint64_t *) (textTemp + iterator * purgeBytesCount), (uint64_t *) keyTemp);
             memset(keyTemp, 0, purgeBytesCount);
@@ -111,16 +112,13 @@ void evasionHashData(const void *text, uint64_t size, uint64_t *outputHash) {
 
     forAll(iterator, hashCount) {
         memcpy((uint8_t*) &hashTemp[0] + half, text + iterator * half, half);
-//        printf("%llu - %llu %llu %llu %llu %llu %llu %llu %llu\n",
-//               iterator, hashTemp[0], hashTemp[1], hashTemp[2], hashTemp[3],
-//                         hashTemp[4], hashTemp[5], hashTemp[6], hashTemp[7]);
-        evasionHash(hashTemp);
+        evasionRand(hashTemp);
     }
 
     if(addition) {
         memcpy((uint8_t*) hashTemp + half, text + hashCount * half, addition);
         memset((uint8_t*) hashTemp + half + addition, 0, half - addition);
-        evasionHash(hashTemp);
+        evasionRand(hashTemp);
     }
     // final
     memcpy(outputHash, hashTemp, evasionBytesCount);

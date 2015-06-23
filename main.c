@@ -153,6 +153,15 @@ void hashTest() {
             "occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit\n"
             "anim id est laborum.";
 
+    char *stringToHash3 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, \n"
+            "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. \n"
+            "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut\n"
+            "aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in\n"
+            "voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint\n"
+                       // diff here | 1 bit
+            "occaecat cupidatat non qroident, sunt in culpa qui officia deserunt mollit\n"
+            "anim id est laborum.";
+
     uint64_t stringLength = strlen(stringToHash);
 
     printf("\n hashTest --------------------------------\n");
@@ -166,6 +175,12 @@ void hashTest() {
     printf("Hash 2:\n");
     evasionHashData(stringToHash2, stringLength, dest);
     printByteArrayInHex((const byte *) dest, evasionBytesCount);
+
+    memset(dest, 0, evasionBytesCount);
+
+    printf("Hash 3:\n");
+    evasionHashData(stringToHash3, stringLength, dest);
+    printByteArrayInHex((const byte *) dest, evasionBytesCount);
 }
 
 void simpleCollisionTest() {
@@ -177,7 +192,7 @@ void simpleCollisionTest() {
     forAll(iterator, 13) {
         memset((byte *) data, 0, evasionBytesCount);
         data[0] = iterator;
-        evasionHash(data);
+        evasionRand(data);
         printf("Hash %lu:\n", iterator);
         printByteArrayInHex((const byte *) data, evasionBytesCount);
     }

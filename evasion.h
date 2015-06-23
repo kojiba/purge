@@ -51,6 +51,6 @@ static const uint8_t evasionSubstitutionBlock[256] = {
         0xB9, 0xEE, 0x99, 0x7E, 0x6A, 0x43, 0x29, 0x93, 0x09, 0x7A, 0xCD, 0xC3, 0x4B, 0x3A, 0xC2, 0x8C,
 };
 
-void evasionHash(uint64_t data[8]); // data will be changed
+void evasionRand(uint64_t data[8]); // data will be changed
 
 #endif /*__EVASION_H__*/
