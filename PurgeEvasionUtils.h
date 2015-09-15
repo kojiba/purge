@@ -21,9 +21,9 @@
 #include "purge.h"
 #include "evasion.h"
 
+void  evasionHashData(const void *text, uint64_t size, uint64_t *outputHash); // outputHash - 512 bits (64 bytes, 8 uint64 blocks)
+
 void* encryptPurgeEvasion(const void *text, uint64_t size, uint64_t key[8], uint64_t *cryptedSize);   // return value is nil or dynamic allocated
 void* decryptPurgeEvasion(const void *text, uint64_t size, uint64_t key[8], uint64_t *encryptedSize); // return value is nil or dynamic allocated
-
-void  evasionHashData(const void *text, uint64_t size, uint64_t *outputHash); // outputHash - 512 bits (64 bytes, 8 uint64 blocks)
 
 #endif /*__PURGE_EVASION_UTILS_H__*/

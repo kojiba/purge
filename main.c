@@ -200,11 +200,10 @@ void simpleCollisionTest() {
 
 int main(int argc, const char *argv[]) {
 //
-    cipherTestSimple();
+//    cipherTestSimple();
     cipherTest();
-    hashTest();
-//
-    simpleCollisionTest();
+//    hashTest();
+//    simpleCollisionTest();
 
-    return 0;
+    exit(0);
 }
