@@ -60,8 +60,8 @@ void* encryptPurgeEvasion(const void *text, uint64_t size, uint64_t key[8], uint
     uint64_t  totalSize   = size + sizeof(uint64_t);
     uint64_t  cipherCount = totalSize / purgeBytesCount;
     uint64_t  addition    = totalSize % purgeBytesCount;
-    uint64_t hash[8];
-    uint8_t keyTemp[purgeBytesCount];
+    uint64_t  hash[8];
+    uint8_t   keyTemp[purgeBytesCount];
 
     if(addition != 0) {
         totalSize += purgeBytesCount - addition;
@@ -89,6 +89,12 @@ void* encryptPurgeEvasion(const void *text, uint64_t size, uint64_t key[8], uint
             memset(keyTemp, 0, purgeBytesCount);
         }
 
+        // crypt hash by last key
+        evasionRand(key);
+        memcpy(keyTemp, key, purgeBytesCount);
+        purgeEncrypt(hash, (uint64_t *) keyTemp);
+        memset(keyTemp, 0, purgeBytesCount);
+
         // append hash
         textTemp = realloc(textTemp, totalSize + evasionBytesCount);
         if(textTemp != nil) {
@@ -108,6 +114,7 @@ void* decryptPurgeEvasion(const void *text, uint64_t size, uint64_t key[8], uint
     uint64_t sizeOfText;
     uint8_t  keyTemp[purgeBytesCount];
     uint64_t hash[8];
+    uint8_t *hashPtr = nil;
 
     if(size % purgeBytesCount) {
         perror("decryptPurgeEvasion. Bad data size. Must be multiple of 64. Data size in bytes\n");
@@ -118,7 +125,8 @@ void* decryptPurgeEvasion(const void *text, uint64_t size, uint64_t key[8], uint
 
     if(textTemp != nil) {
         *encryptedSize = 0;
-        memcpy(textTemp, text, size); // add size in front
+        memcpy(textTemp, text, size);
+        hashPtr = (textTemp + size - evasionBytesCount);
 
         forAll(iterator, cipherCount) {
             evasionRand(key);
@@ -127,10 +135,17 @@ void* decryptPurgeEvasion(const void *text, uint64_t size, uint64_t key[8], uint
             memset(keyTemp, 0, purgeBytesCount);
         }
 
-        // check hash
+        // decrypt hash by last key
+        evasionRand(key);
+        memcpy(keyTemp, key, purgeBytesCount);
+        purgeDecrypt((uint64_t *) hashPtr, (uint64_t *) keyTemp);
+        memset(keyTemp, 0, purgeBytesCount);
+
+        // get hash of decrypted
         evasionHashData(textTemp + sizeof(uint64_t), size - evasionBytesCount - sizeof(uint64_t), (uint64_t *)hash);
 
-        if(memcmp(hash, textTemp + size - evasionBytesCount, evasionBytesCount) == 0) {
+        // check hash
+        if(memcmp(hash, hashPtr, evasionBytesCount) == 0) {
             // get size
             memcpy((uint8_t*) &sizeOfText, textTemp, sizeof(uint64_t));
             plainText = malloc(sizeOfText);
