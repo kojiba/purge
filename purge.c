@@ -145,7 +145,7 @@ void purgeEncrypt(uint64_t data[8], uint64_t key[8]) {
     uint64_t temp;
     byte iterator;
 
-    forAll(iterator, purgeRoundsCount) { // 63 rounds [0 : 62]
+    forAll(iterator, purgeRoundsCount) { // 30 rounds [0 : 29]
         // round
         data[0] = rotateLeft(data[0], 7);
         data[1] ^= purgePalindromeMask;
