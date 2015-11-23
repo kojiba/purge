@@ -40,7 +40,7 @@ B8 FF E8 11 EB 46 0F FE 12 AE 7F 34 E7 7A 03 49 18 B8 F8 AA EA F4 D6 3D 1F A8 98
 91 42 7E 4C CF EA E4 30 56 6E 4B 28 19 4D D0 FA 72 55 FE DB 48 D5 79 FA 5A 1D 9B 47 10 9D E1 7E  
 ```
 
-Use PurgeEvasionUtils.h to perform cryptography operations like enc/dec/hash.
-See https://github.com/kojiba/RayLanguage for better security integrations.
+Use PurgeEvasionUtils.h to perform cryptography operations like enc/dec/hash.  
+See https://github.com/kojiba/RayLanguage for better security integrations.  
 
 11/23/2015 Ukraine Kharkiv
