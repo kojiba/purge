@@ -1,5 +1,5 @@
 key is zeros in all cases
-data is counter (CTR) [0, 256]
+data is counter (CTR) [0, 255]
 src in ctrTest in https://github.com/kojiba/purge/blob/master/main.c
 
 B8 FF E8 11 EB 46 0F FE 12 AE 7F 34 E7 7A 03 49 18 B8 F8 AA EA F4 D6 3D 1F A8 98 35 35 C7 5C 42 
