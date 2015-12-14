@@ -246,13 +246,30 @@ void optimisationTest(){
      */
 }
 
+void crtTest(){
+    byte array[purgeBytesCount] = {};
+    byte key[purgeBytesCount] = {};
+
+    size_t dieHardCount = 256;
+    size_t iterator;
+
+    forAll(iterator, dieHardCount) {
+        array[0] = (byte) iterator;
+        purgeEncrypt((uint64_t *) array, (uint64_t *) key);
+        printByteArrayInHex(array, purgeBytesCount);
+        memset(key, 0, purgeBytesCount);
+        memset(array, 0, purgeBytesCount);
+    }
+}
+
 int main(int argc, const char *argv[]) {
 //
-    cipherTestSimple();
-    cipherTest();
-    hashTest();
-    simpleCollisionTest();
-    optimisationTest();
+//    cipherTestSimple();
+//    cipherTest();
+//    hashTest();
+//    simpleCollisionTest();
+//    optimisationTest();
+    crtTest();
 
     exit(0);
 }
